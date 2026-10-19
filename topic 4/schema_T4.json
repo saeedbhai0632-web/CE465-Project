@@ -1,0 +1,108 @@
+{
+  "schema_version": "T4-1.0",
+  "topic": 4,
+  "fields": {
+    "rmse_abrams_wc": {
+      "type": "number",
+      "units": "MPa",
+      "part": "a"
+    },
+    "rmse_abrams_wb": {
+      "type": "number",
+      "units": "MPa",
+      "part": "a"
+    },
+    "cond_linear_raw": {
+      "type": "number",
+      "units": "-",
+      "part": "b"
+    },
+    "cond_linear_scaled": {
+      "type": "number",
+      "units": "-",
+      "part": "b"
+    },
+    "top_corr_pair": {
+      "type": "string",
+      "values": [
+        "cement+slag",
+        "cement+ash",
+        "cement+water",
+        "cement+superplasticiser",
+        "cement+coarse",
+        "cement+fine",
+        "cement+ln_age",
+        "slag+ash",
+        "slag+water",
+        "slag+superplasticiser",
+        "slag+coarse",
+        "slag+fine",
+        "slag+ln_age",
+        "ash+water",
+        "ash+superplasticiser",
+        "ash+coarse",
+        "ash+fine",
+        "ash+ln_age",
+        "water+superplasticiser",
+        "water+coarse",
+        "water+fine",
+        "water+ln_age",
+        "superplasticiser+coarse",
+        "superplasticiser+fine",
+        "superplasticiser+ln_age",
+        "coarse+fine",
+        "coarse+ln_age",
+        "fine+ln_age"
+      ],
+      "part": "b"
+    },
+    "lambda_cv": {
+      "type": "number",
+      "units": "-",
+      "part": "c"
+    },
+    "rmse_quad_ols": {
+      "type": "number",
+      "units": "MPa",
+      "part": "c"
+    },
+    "rmse_quad_ridge": {
+      "type": "number",
+      "units": "MPa",
+      "part": "c"
+    },
+    "sd_water_ols": {
+      "type": "number",
+      "units": "MPa per sd of water",
+      "part": "d"
+    },
+    "sd_water_ridge": {
+      "type": "number",
+      "units": "MPa per sd of water",
+      "part": "d"
+    },
+    "f_new_wb": {
+      "type": "number",
+      "units": "MPa",
+      "part": "e_num"
+    },
+    "f_new_ridge": {
+      "type": "number",
+      "units": "MPa",
+      "part": "e_num"
+    },
+    "df_water_wb": {
+      "type": "number",
+      "units": "MPa",
+      "part": "e_num"
+    },
+    "df_water_ridge": {
+      "type": "number",
+      "units": "MPa",
+      "part": "e_num"
+    }
+  },
+  "diagnostics_optional": [
+    "cv_scores"
+  ]
+}

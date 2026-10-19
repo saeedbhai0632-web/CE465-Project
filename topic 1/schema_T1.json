@@ -1,0 +1,100 @@
+{
+  "schema_version": "T1-1.0",
+  "topic": 1,
+  "fields": {
+    "a_naive": {
+      "type": "number",
+      "length": null,
+      "units": "-",
+      "part": "a"
+    },
+    "b_naive": {
+      "type": "number",
+      "length": null,
+      "units": "-",
+      "part": "a"
+    },
+    "Q5_naive": {
+      "type": "number",
+      "length": null,
+      "units": "m3/s",
+      "part": "a"
+    },
+    "h0_scan": {
+      "type": "number",
+      "length": null,
+      "units": "m",
+      "part": "b"
+    },
+    "SSE_scan": {
+      "type": "number",
+      "length": null,
+      "units": "-",
+      "part": "b"
+    },
+    "lna_R1": {
+      "type": "number",
+      "length": null,
+      "units": "-",
+      "part": "c"
+    },
+    "b_R1": {
+      "type": "number",
+      "length": null,
+      "units": "-",
+      "part": "c"
+    },
+    "h0_R1": {
+      "type": "number",
+      "length": null,
+      "units": "m",
+      "part": "c"
+    },
+    "h0_R2": {
+      "type": "number",
+      "length": null,
+      "units": "m",
+      "part": "c"
+    },
+    "Q_hold_naive": {
+      "type": "array",
+      "length": 3,
+      "units": "m3/s",
+      "part": "d"
+    },
+    "Q_hold_fit": {
+      "type": "array",
+      "length": 3,
+      "units": "m3/s",
+      "part": "d"
+    },
+    "holdout_winner": {
+      "type": "string",
+      "values": [
+        "naive",
+        "fitted"
+      ],
+      "part": "d"
+    },
+    "Q5": {
+      "type": "number",
+      "length": null,
+      "units": "m3/s",
+      "part": "e_num"
+    },
+    "Q5_err": {
+      "type": "number",
+      "length": null,
+      "units": "m3/s",
+      "part": "e_num"
+    }
+  },
+  "diagnostics_optional": [
+    "iterations_R1",
+    "iterations_R2",
+    "R3_failed",
+    "step_norms_R1",
+    "holdout_rmse_naive",
+    "holdout_rmse_fit"
+  ]
+}

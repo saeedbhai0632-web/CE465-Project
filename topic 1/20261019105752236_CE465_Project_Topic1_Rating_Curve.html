@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CE 465 Project · Topic 1 · River rating curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --paper: #FAFBFC; --panel: #F0F4F7; --ink: #1C2730; --muted: #55626D;
+  --rule: #D3DBE1; --river: #1F6F8B; --river-soft: #DCEBF1; --flood: #A85B1E;
+  --ok: #2F6B3A; --bad: #A33A2A;
+  --serif: "Literata", Georgia, "Times New Roman", serif;
+  --sans: "Public Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #12181D; --panel: #1A2329; --ink: #E3E9ED; --muted: #9AA8B2;
+    --rule: #2D3942; --river: #67B6D3; --river-soft: #1D3440; --flood: #E29B5B;
+    --ok: #7FC58A; --bad: #EE8C7C;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--serif); font-size: 1.0625rem; line-height: 1.65;
+  padding: env(safe-area-inset-top, 0px) 1.25rem env(safe-area-inset-bottom, 0px);
+}
+main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 0 4rem; }
+h1, h2, h3, button, label, select, .meta, table, .ui { font-family: var(--sans); }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 .35rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; margin: 2.6rem 0 .6rem; padding-top: 1.1rem; border-top: 1px solid var(--rule); }
+h3 { font-size: 1.05rem; margin: 1.6rem 0 .3rem; }
+.meta { color: var(--muted); font-size: .95rem; margin: 0 0 1.2rem; }
+p { margin: .6rem 0; }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+code { background: var(--panel); padding: .05rem .3rem; border-radius: 3px; }
+pre { background: var(--panel); padding: .8rem 1rem; border-radius: 6px; overflow-x: auto; font-size: .85rem; line-height: 1.5; }
+.hero { margin: 1.5rem 0 1rem; }
+.hero svg { width: 100%; height: auto; display: block; }
+.hero figcaption { font-family: var(--sans); color: var(--muted); font-size: .85rem; margin-top: .3rem; }
+ul, ol { padding-left: 1.3rem; }
+li { margin: .25rem 0; }
+.part { border-left: 3px solid var(--river); padding: .2rem 0 .2rem 1rem; margin: 1.4rem 0; }
+.part h3 { margin-top: 0; }
+.fields { font-family: var(--sans); font-size: .9rem; color: var(--muted); }
+.fields code { color: var(--ink); }
+.think { font-style: italic; color: var(--muted); }
+.wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: .6rem 0; }
+th, td { text-align: left; padding: .4rem .55rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+.panel { background: var(--panel); border-radius: 8px; padding: 1.1rem 1.2rem; margin: 1rem 0; }
+.row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: .5rem 0; }
+label { font-size: .95rem; }
+select, input[type=file] { font-family: var(--sans); font-size: .95rem; }
+select { padding: .35rem .5rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); }
+button {
+  font-size: .95rem; font-weight: 600; padding: .5rem .95rem; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--river); background: var(--river); color: var(--paper);
+}
+button.quiet { background: transparent; color: var(--river); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--flood); outline-offset: 2px; }
+fieldset { border: 1px solid var(--rule); border-radius: 6px; padding: .6rem .9rem; margin: .8rem 0; }
+legend { font-family: var(--sans); font-weight: 600; font-size: .95rem; padding: 0 .3rem; }
+.opt { display: flex; gap: .5rem; align-items: flex-start; margin: .35rem 0; font-family: var(--serif); }
+.opt input { margin-top: .4rem; }
+.msg { font-family: var(--sans); font-size: .92rem; margin: .5rem 0; }
+.msg.ok { color: var(--ok); } .msg.bad { color: var(--bad); }
+#filelist { font-family: var(--mono); font-size: .85rem; color: var(--muted); }
+.flood { color: var(--flood); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Topic 1. River rating curve</h1>
+<p class="meta">CE 465 Computer Project 2026 · Pool A (easy–intermediate) · about 1.5–2 hours</p>
+
+<figure class="hero" aria-label="Sketch: measured gaugings up to 3 m, the fitted curve, and the long extrapolation to the 5 m flood stage">
+<svg viewBox="0 0 640 260" role="img">
+  <g font-family="Public Sans, sans-serif" font-size="12" fill="currentColor">
+    <line x1="60" y1="220" x2="610" y2="220" stroke="var(--rule)" stroke-width="1.5"/>
+    <line x1="60" y1="220" x2="60" y2="20" stroke="var(--rule)" stroke-width="1.5"/>
+    <text x="335" y="250" text-anchor="middle" fill="var(--muted)">stage h (m)</text>
+    <text x="22" y="120" text-anchor="middle" fill="var(--muted)" transform="rotate(-90 22 120)">discharge Q (m³/s)</text>
+    <text x="104" y="236" fill="var(--muted)">0.6</text><text x="268" y="236" fill="var(--muted)">3.0</text><text x="564" y="236" fill="var(--flood)">5.0</text>
+    <rect x="104" y="20" width="168" height="200" fill="var(--river-soft)" opacity="0.6"/>
+    <text x="188" y="38" text-anchor="middle" fill="var(--river)">measured range</text>
+    <path d="M 98 219 C 160 214, 220 196, 272 168" fill="none" stroke="var(--river)" stroke-width="2.5"/>
+    <path d="M 272 168 C 380 120, 480 70, 572 34" fill="none" stroke="var(--flood)" stroke-width="2.5" stroke-dasharray="7 6"/>
+    <line x1="572" y1="20" x2="572" y2="220" stroke="var(--flood)" stroke-width="1" stroke-dasharray="3 4"/>
+    <text x="562" y="130" text-anchor="end" fill="var(--flood)">design flood: Q at 5.0 m?</text>
+    <g fill="var(--ink)">
+      <circle cx="108" cy="217" r="3.5"/><circle cx="126" cy="214" r="3.5"/><circle cx="139" cy="214" r="3.5"/>
+      <circle cx="152" cy="209" r="3.5"/><circle cx="166" cy="207" r="3.5"/><circle cx="180" cy="203" r="3.5"/>
+      <circle cx="193" cy="201" r="3.5"/><circle cx="205" cy="195" r="3.5"/><circle cx="217" cy="194" r="3.5"/>
+      <circle cx="228" cy="188" r="3.5"/><circle cx="240" cy="185" r="3.5"/><circle cx="250" cy="178" r="3.5"/>
+      <circle cx="258" cy="177" r="3.5"/><circle cx="265" cy="170" r="3.5"/><circle cx="270" cy="168" r="3.5"/>
+    </g>
+  </g>
+</svg>
+<figcaption>Schematic, not to scale. Fifteen gaugings between 0.6 m and 3.0 m; the design question lies far outside them, at 5.0 m.</figcaption>
+</figure>
+
+<div class="panel">
+<p style="margin-top:0"><b>What you hand in.</b> One file, exported from the "Hand in" section at the bottom of this page. It contains:</p>
+<ol style="margin-bottom:.3rem">
+<li>your team number,</li>
+<li>your answer to the part (e) choice question, and</li>
+<li>one Python file, <code>run.py</code>, with all your code in it.</li>
+</ol>
+<p style="margin-bottom:0">You do not type any numbers on this page. Your <code>run.py</code> computes them, and the grader runs it.</p>
+</div>
+
+<h2>The problem</h2>
+<p>A river gauging station has 15 discharge measurements (called gaugings), taken at stages between 0.6 m and 3.0 m. The stage h is the water level at the station; the discharge Q is the flow, in m³/s. A bridge waterway must be designed for a flood stage of 5.0 m. Engineers describe such a station by a rating curve</p>
+<p style="text-align:center"><span class="mono">Q = a (h − h₀)<sup>b</sup></span></p>
+<p>where h₀ is the stage at which the model says the flow would be zero. It is never known exactly, so it must be found from the data. You will fit the curve, see what goes wrong if h₀ is simply set to zero, and report the flood discharge with an honest ±.</p>
+
+<h2>How to complete this project</h2>
+<ol>
+<li>Fit the naive curve, taking h₀ = 0.</li>
+<li>Estimate h₀ by scanning a grid of values.</li>
+<li>Improve the fit with Gauss–Newton.</li>
+<li>Check the predictions on the three highest readings.</li>
+<li>Report the flood discharge at 5.0 m with an error bar, and judge how far to trust it.</li>
+</ol>
+<p>Put all of this in one Python file, <code>run.py</code>, export your submission at the bottom of this page, and upload it.</p>
+
+<h2>Rules</h2>
+<ul>
+<li>Teams of three. Each team does one topic from Pool A (Topics 1 and 2) and one from Pool B (Topics 3 and 4).</li>
+<li>You may use any resource, LLMs included, except copying from another team. You may discuss methods with other teams, but not share numbers or code.</li>
+<li>Python only: Python 3.11 or later, with NumPy, SciPy, Matplotlib and pandas. No other packages. Your code must not use the internet.</li>
+<li>Your marks (1.5 for this topic) come from running your code on your team's data and on a second, unseen dataset of the same kind. Code that only prints fixed numbers will fail the second run.</li>
+<li>Later, each student takes a short closed-book test with 4 questions on this topic. A sample is at the end of this page.</li>
+<li>If anything on this page is unclear, ask the instructor rather than guess.</li>
+</ul>
+
+<h2>Your data</h2>
+<p>Each team has its own 15 gaugings. Choose your team number and download the file. It has two columns, <code>h_m</code> (stage, m) and <code>Q_m3s</code> (discharge, m³/s), sorted by stage. Save it as <code>topic1.csv</code> inside a folder, for example <code>data/</code>.</p>
+<div class="panel ui">
+  <div class="row">
+    <label for="team-data">Team number</label>
+    <select id="team-data"></select>
+    <button id="get-data">Download topic1.csv</button>
+  </div>
+</div>
+
+<h2>Fixed definitions</h2>
+<p>Everyone must use exactly these definitions, so that every correct program gives the same numbers.</p>
+
+<h3>Quantities</h3>
+<ul>
+<li><b>Model.</b> ln Q = ln a + b · ln(h − h₀), with natural logarithms. Fit by least squares with equal weights in ln Q. h₀ must stay below the lowest stage, min(h). b has no units; a has units (m³/s)/m<sup>b</sup>. Take logarithms of the numbers as given, with h in m and Q in m³/s.</li>
+<li><b>Residual and SSE.</b> The residual of reading i is r<sub>i</sub> = ln Q<sub>i</sub> − ln a − b · ln(h<sub>i</sub> − h₀). SSE is the sum of the squared residuals.</li>
+<li><b>Flood discharge.</b> Flood stage H = 5.0 m; flood discharge Q₅ = a · (H − h₀)<sup>b</sup>.</li>
+<li><b>Leave-one-out error bar.</b> Fit the curve 15 times, each time leaving out one reading (each refit repeats the scan and R1, below), and compute Q₅ each time. If Q₅ changes a lot, the prediction is sensitive to which measurements happened to be taken. Call the 15 values Q₅<sub>(i)</sub> and their mean Q̄. The error bar is ΔQ₅ = √( (14/15) · Σ (Q₅<sub>(i)</sub> − Q̄)² ). This is not the ordinary standard deviation of the 15 values: any two refits share 13 of their 14 readings, so the 15 values lie much closer together than independent estimates would, and the factor 14/15 (instead of the usual 1/14) scales them back up. The error bar is not a guarantee of how accurate the flood prediction is.</li>
+</ul>
+
+<h3>Numerical experiments</h3>
+<ul>
+<li><b>Scan grid.</b> h₀ = 0, 0.001, 0.002, … m, up to the largest value that is at most min(h) − 0.001 m. Every dataset issued has its smallest SSE inside the grid, not at either end.</li>
+<li><b>Gauss–Newton</b> (Lecture 2, Appendix A7). Unknowns p = (ln a, b, h₀). At each iteration, find the step δ as the least-squares solution of J δ = −r. Here r is the vector of the 15 residuals and J is the 15 × 3 matrix of their derivatives with respect to (ln a, b, h₀); its three columns are −1, −ln(h − h₀) and b/(h − h₀). The new estimate is p + δ.</li>
+<li><b>Step halving.</b> While the new h₀ would be above min(h) − 10⁻⁶ m, or the new SSE would be larger than the current SSE, halve δ.</li>
+<li><b>Stopping rule.</b> Stop when the length (2-norm) of the step actually taken, after any halving, is below 10⁻¹⁰, or after 100 iterations.</li>
+<li><b>Three runs.</b> They test whether the answer depends on the starting guess, and whether step halving makes the method reliable.
+  <ul>
+  <li>R1 starts from the scan result: the full vector (ln a, b, h₀) of the line with the smallest SSE in part (b). With step halving.</li>
+  <li>R2 starts from (ln a, b, h₀) = (0, 1, 0). With step halving.</li>
+  <li>R3 starts from (0, 1, 0) without step halving. It may converge, leave the allowed region or fail; no marks depend on it. Your <code>run.py</code> must catch a failure (for example with <code>try/except</code>) and carry on, so that the results file is still written.</li>
+  </ul></li>
+</ul>
+
+<h2>What to compute</h2>
+<p>Each part names the fields your code must write. Each of parts (a)–(d) earns 0.25 if all its fields are correct; part (e) earns 0.25 for its numbers and 0.25 for its choice. A field counts as correct when it is within its tolerance of the reference value: a relative 10⁻⁶ for direct least-squares results (parts (a), (b) and the naive predictions), a relative 10⁻⁴ for Gauss–Newton results (h₀ within 10⁻⁵ m), and a relative 10⁻³ for the error bar. If you follow the definitions and the stopping rule exactly, you will be well inside these. The lines in italics are for your own understanding. You need not submit written answers or plots; related ideas are tested in the individual test.</p>
+
+<div class="part">
+<h3>(a) The naive fit, with h₀ = 0</h3>
+<p>Fit ln Q = ln a + b · ln h (that is, take h₀ = 0) by least squares. Compute the flood discharge from this fit.</p>
+<p class="fields">Fields: <code>a_naive</code>, <code>b_naive</code>, <code>Q5_naive</code> (m³/s)</p>
+<p class="think">Plot the residuals against h. What pattern do you see, and what does it tell you?</p>
+</div>
+
+<div class="part">
+<h3>(b) Scan h₀</h3>
+<p>For every h₀ on the scan grid, fit the straight line ln Q = ln a + b · ln(h − h₀) and record its SSE. Find the grid value with the smallest SSE.</p>
+<p class="fields">Fields: <code>h0_scan</code> (m), <code>SSE_scan</code></p>
+<p class="think">Plot SSE against h₀. Is the minimum sharp or flat?</p>
+</div>
+
+<div class="part">
+<h3>(c) Gauss–Newton</h3>
+<p>Run R1, R2 and R3 as defined above. Report the final values of R1, and the final h₀ of R2.</p>
+<p class="fields">Fields: <code>lna_R1</code>, <code>b_R1</code>, <code>h0_R1</code> (m), <code>h0_R2</code> (m). Optional, not marked: <code>iterations_R1</code>, <code>iterations_R2</code>, <code>R3_failed</code>, <code>step_norms_R1</code> in the diagnostics.</p>
+<p class="think">Compare R2 and R3: did R3 converge, leave the allowed region or fail? Do the accepted steps become smaller as the fit approaches its minimum, and how do the three runs differ?</p>
+</div>
+
+<div class="part">
+<h3>(d) Check on the highest readings</h3>
+<p>Hold back the 3 highest stages. Fit both models to the other 12 readings: the naive fit with h₀ = 0, and the full method (a new scan of h₀ on the 12 readings, then R1 from its result). Predict Q at the 3 held-back stages, in increasing order of stage. For each model, compute the root-mean-square error of its 3 predictions against the 3 measured discharges, in m³/s. The model with the smaller error is the winner.</p>
+<p class="fields">Fields: <code>Q_hold_naive</code>, <code>Q_hold_fit</code> (each a list of 3 values, m³/s), <code>holdout_winner</code> (<code>"naive"</code> or <code>"fitted"</code>)</p>
+<p class="think">Did the fitted-h₀ model win for your data? It does not win for every team. Why might the naive model sometimes predict three readings better and still be the worse model at 5.0 m?</p>
+</div>
+
+<div class="part">
+<h3>(e) The flood discharge and its ±</h3>
+<p>Report Q₅ from R1 and its leave-one-out error bar. Then answer the choice question in the hand-in section below.</p>
+<p class="fields">Fields: <code>Q5</code> (m³/s), <code>Q5_err</code> (m³/s)</p>
+<p class="think">Why does a correct calculation inside the measured range not guarantee the answer at 5.0 m?</p>
+</div>
+
+<h2>Your code</h2>
+<p>All your code goes in one file, <code>run.py</code>. No other files. The grader runs</p>
+<pre>python run.py --topic 1 --data &lt;folder containing topic1.csv&gt; --out &lt;folder&gt;</pre>
+<p>and <code>run.py</code> must write <code>results_T1.json</code> into the <code>--out</code> folder, in this form:</p>
+<p>The values below are made up to show the format; they are not anyone's answer.</p>
+<pre>{"schema_version": "T1-1.0", "topic": 1,
+ "fields": {"a_naive": 2.0, "b_naive": 2.3, "Q5_naive": 81.03,
+            "h0_scan": 0.3, "SSE_scan": 0.0123,
+            "lna_R1": 2.4, "b_R1": 1.7, "h0_R1": 0.3, "h0_R2": 0.3,
+            "Q_hold_naive": [30.1, 33.2, 36.3], "Q_hold_fit": [29.0, 31.8, 34.2],
+            "holdout_winner": "fitted",
+            "Q5": 153.06, "Q5_err": 10.5},
+ "diagnostics": {"iterations_R1": 5, "R3_failed": true}}</pre>
+<p>Use full precision; do not round. It must finish within 120 seconds. Before you hand in, run <code>validate.py</code>: it checks that your code runs and writes a file in the right format. It does not check whether your numbers are correct.</p>
+<pre>python validate.py --code &lt;folder containing run.py&gt; --topic 1 --data &lt;folder containing topic1.csv&gt;</pre>
+<div class="panel ui">
+  <div class="row">
+    <button class="quiet" data-kit="run_template.py">Download run_template.py</button>
+    <button class="quiet" data-kit="validate.py">Download validate.py</button>
+    <button class="quiet" data-kit="schema_T1.json">Download schema_T1.json</button>
+  </div>
+</div>
+
+<h2>Hand in</h2>
+<p>Fill in this section, attach your code, and export one file. Upload that file to the Google Form, in the field for Pool A. One file per team for this topic.</p>
+<div class="panel ui">
+  <div class="row">
+    <label for="team-sub">Team number</label>
+    <select id="team-sub"></select>
+  </div>
+  <fieldset>
+    <legend>Part (e) choice: the bridge designer wants a more trustworthy flood discharge at 5.0 m. Which extra data would help most?</legend>
+    <label class="opt"><input type="radio" name="choice" value="A"> <span>A. More gaugings between 1.0 m and 3.0 m.</span></label>
+    <label class="opt"><input type="radio" name="choice" value="B"> <span>B. Gaugings at higher stages, for example 3.5–4.5 m, taken during future floods.</span></label>
+    <label class="opt"><input type="radio" name="choice" value="C"> <span>C. Repeating the same 15 gaugings to average out their errors.</span></label>
+    <label class="opt"><input type="radio" name="choice" value="D"> <span>D. A finer scan grid for h₀, with steps of 0.0001 m.</span></label>
+  </fieldset>
+  <div class="row">
+    <label for="code">Attach your code: the single file <code>run.py</code></label>
+  </div>
+  <div class="row"><input type="file" id="code" accept=".py"></div>
+  <div id="filelist"></div>
+  <div class="row">
+    <button id="export">Export submission file</button>
+    <label class="ui" for="reload" style="margin-left:.5rem">or continue from an exported file:</label>
+    <input type="file" id="reload" accept=".html">
+  </div>
+  <div id="msg" class="msg" role="status" aria-live="polite"></div>
+</div>
+
+<h2>Sample test question</h2>
+<p>The individual test has 4 questions like this one on this topic. This sample will not appear on the test.</p>
+<div class="panel">
+<p>Why are equal weights in ln Q appropriate when each gauging has about 5% relative error?</p>
+<p>A. A 5% relative error is about the same size in ln Q at every stage.<br>
+B. Large discharges matter more for design.<br>
+C. Equal weights always give the smallest flood estimate.<br>
+D. The logarithm removes all measurement error.</p>
+<details><summary class="ui">Answer</summary><p>A. In ln Q, a 5% error is a shift of about 0.05 whatever the size of Q, so every reading deserves the same weight.</p></details>
+</div>
+
+<h2>Words used here</h2>
+<ul>
+<li><b>Leave-one-out error bar:</b> repeat the whole fit 15 times, each time leaving out one reading, and measure how much the answer moves.</li>
+<li><b>Step halving:</b> shortening a Gauss–Newton step that would leave the allowed region (h₀ below the lowest stage) or make the fit worse.</li>
+</ul>
+
+</main>
+
+<script>
+const DATA = {"1": "h_m,Q_m3s\n0.748,2.081\n1.254,8.020\n1.313,8.787\n1.497,11.592\n1.613,15.405\n1.785,17.869\n1.823,19.307\n1.898,19.624\n1.963,22.415\n1.992,22.983\n2.082,25.352\n2.438,34.865\n2.559,35.725\n2.866,44.182\n2.939,44.056\n", "2": "h_m,Q_m3s\n0.732,2.094\n0.838,3.329\n0.963,4.718\n1.208,8.808\n1.384,12.965\n1.582,17.474\n1.597,22.123\n1.610,19.075\n2.367,44.973\n2.540,56.815\n2.588,52.941\n2.613,62.304\n2.741,62.585\n2.743,66.577\n2.969,75.211\n", "3": "h_m,Q_m3s\n0.701,2.119\n0.742,2.614\n0.975,5.841\n1.108,7.811\n1.110,8.011\n1.416,14.711\n1.436,14.933\n1.675,19.637\n1.879,27.353\n1.929,28.982\n1.948,30.095\n2.270,44.672\n2.604,58.473\n2.897,66.481\n2.956,70.094\n", "4": "h_m,Q_m3s\n0.615,1.074\n0.791,2.836\n1.747,21.556\n1.990,29.978\n2.117,36.190\n2.213,41.310\n2.430,48.370\n2.488,46.271\n2.567,47.810\n2.579,55.634\n2.589,52.970\n2.594,50.383\n2.633,58.678\n2.659,57.338\n2.803,59.698\n", "5": "h_m,Q_m3s\n0.779,3.257\n0.850,4.083\n1.075,7.881\n1.146,9.658\n1.347,12.715\n1.431,15.492\n1.730,26.073\n1.751,25.954\n1.883,28.278\n2.026,33.056\n2.244,38.558\n2.338,45.066\n2.481,50.428\n2.641,56.242\n2.654,59.005\n", "6": "h_m,Q_m3s\n0.798,3.600\n0.824,3.469\n0.938,5.160\n1.005,6.356\n1.072,7.101\n1.146,7.833\n1.288,9.978\n1.461,13.748\n1.584,15.122\n1.692,17.687\n2.047,27.035\n2.418,36.310\n2.734,46.054\n2.911,48.592\n2.927,52.324\n", "7": "h_m,Q_m3s\n0.608,0.982\n0.775,2.503\n1.032,5.910\n1.061,5.834\n1.095,6.576\n1.140,7.445\n1.316,10.299\n1.427,12.190\n2.017,28.368\n2.473,44.639\n2.716,45.860\n2.790,55.270\n2.793,54.815\n2.874,59.206\n2.940,61.481\n", "8": "h_m,Q_m3s\n0.782,4.457\n0.837,4.843\n0.912,6.581\n1.015,8.358\n1.040,8.654\n1.193,12.025\n1.216,11.544\n1.368,15.963\n1.514,20.688\n1.800,28.073\n2.041,37.171\n2.116,39.588\n2.546,63.330\n2.598,59.319\n2.841,69.563\n", "9": "h_m,Q_m3s\n0.629,1.875\n0.914,5.299\n1.046,7.446\n1.096,8.635\n1.212,9.744\n1.311,13.340\n1.497,17.151\n1.715,21.471\n1.749,22.621\n1.959,28.714\n2.429,45.840\n2.611,54.069\n2.812,65.343\n2.890,63.426\n2.931,59.415\n", "10": "h_m,Q_m3s\n0.648,2.647\n0.664,2.846\n0.997,6.791\n1.002,6.950\n1.116,8.712\n1.316,12.630\n1.502,16.750\n1.704,19.081\n2.016,24.409\n2.045,29.113\n2.127,31.623\n2.221,33.215\n2.667,39.018\n2.737,46.945\n2.968,51.181\n", "11": "h_m,Q_m3s\n0.763,1.627\n0.866,2.751\n1.313,9.800\n1.346,9.888\n1.759,19.587\n2.090,30.027\n2.151,31.162\n2.198,30.661\n2.344,36.078\n2.428,39.578\n2.486,40.763\n2.502,39.939\n2.665,48.516\n2.717,53.879\n2.827,59.200\n", "12": "h_m,Q_m3s\n0.604,1.601\n0.702,2.589\n0.875,4.651\n0.948,5.586\n0.952,5.448\n1.200,8.703\n1.237,10.035\n1.481,14.850\n1.544,16.261\n2.007,28.608\n2.060,26.115\n2.273,36.536\n2.276,33.914\n2.425,37.844\n2.630,41.763\n", "13": "h_m,Q_m3s\n0.815,3.667\n0.863,4.066\n0.869,4.422\n1.110,8.519\n1.189,10.027\n1.429,14.680\n1.440,14.976\n1.450,14.147\n1.512,16.879\n1.598,18.952\n1.967,31.250\n2.042,30.291\n2.480,47.799\n2.772,63.819\n2.987,67.520\n", "14": "h_m,Q_m3s\n0.848,3.878\n0.958,4.867\n1.010,5.556\n1.097,6.995\n1.099,6.737\n1.377,12.457\n1.833,24.200\n1.940,23.223\n2.031,29.668\n2.186,31.172\n2.249,36.385\n2.531,46.703\n2.848,51.269\n2.903,62.660\n2.990,60.310\n", "15": "h_m,Q_m3s\n1.098,6.533\n1.277,10.412\n1.514,13.888\n1.568,15.564\n1.598,16.343\n1.609,15.959\n1.958,24.532\n2.122,31.014\n2.132,28.854\n2.379,35.472\n2.529,41.242\n2.571,40.864\n2.898,60.488\n2.916,56.851\n2.995,51.364\n", "16": "h_m,Q_m3s\n0.621,2.495\n0.787,4.601\n0.858,5.759\n0.914,6.374\n1.217,12.241\n1.486,17.559\n1.549,21.496\n2.039,33.079\n2.089,35.747\n2.288,43.962\n2.670,53.553\n2.786,57.989\n2.863,61.990\n2.865,66.911\n2.969,69.813\n", "17": "h_m,Q_m3s\n0.611,2.016\n0.810,3.841\n0.960,6.906\n1.265,11.542\n1.362,13.884\n1.444,15.737\n1.844,22.655\n2.060,27.214\n2.367,40.498\n2.388,38.993\n2.492,42.574\n2.528,44.295\n2.554,43.586\n2.560,44.582\n2.567,46.613\n", "18": "h_m,Q_m3s\n0.753,2.483\n0.756,2.515\n0.760,2.473\n0.840,3.393\n0.841,3.227\n1.010,5.467\n1.041,6.155\n1.196,9.133\n1.595,14.627\n1.789,20.426\n1.816,19.843\n2.048,27.913\n2.163,30.352\n2.796,47.435\n2.923,49.106\n", "19": "h_m,Q_m3s\n1.031,7.683\n1.258,12.669\n1.466,17.068\n1.611,20.643\n1.639,22.746\n1.661,23.317\n1.832,25.665\n2.152,40.993\n2.262,41.452\n2.266,38.893\n2.293,43.078\n2.340,44.205\n2.558,53.469\n2.802,63.826\n2.976,71.293\n", "20": "h_m,Q_m3s\n0.686,1.467\n0.710,1.745\n0.868,3.849\n0.928,4.179\n0.952,4.468\n1.021,5.392\n1.182,8.848\n1.192,8.264\n1.762,21.375\n2.277,39.086\n2.537,44.397\n2.881,56.379\n2.893,57.392\n2.938,59.580\n2.978,62.338\n", "21": "h_m,Q_m3s\n0.910,5.284\n1.107,8.945\n1.130,9.223\n1.287,12.256\n1.475,18.070\n1.957,32.658\n1.987,32.774\n2.183,42.960\n2.438,49.778\n2.648,56.034\n2.712,62.098\n2.772,62.952\n2.884,72.981\n2.905,70.106\n2.968,79.188\n", "22": "h_m,Q_m3s\n0.804,3.070\n1.191,7.272\n1.482,12.288\n1.911,20.437\n2.086,23.376\n2.224,25.608\n2.481,31.238\n2.582,37.139\n2.593,35.374\n2.638,36.398\n2.655,35.268\n2.692,37.188\n2.779,37.080\n2.859,41.411\n2.862,42.395\n", "23": "h_m,Q_m3s\n0.754,2.154\n0.872,3.385\n0.910,3.695\n1.020,5.526\n1.294,10.101\n1.314,10.327\n1.376,10.816\n1.394,11.935\n1.447,11.483\n1.555,14.386\n1.837,20.135\n2.059,26.319\n2.176,29.609\n2.313,36.574\n2.367,33.591\n", "24": "h_m,Q_m3s\n0.664,1.875\n0.675,1.911\n1.028,6.228\n1.255,10.441\n1.613,17.678\n1.759,23.877\n2.021,33.340\n2.069,32.077\n2.085,31.351\n2.151,36.568\n2.471,51.821\n2.873,68.698\n2.889,64.188\n2.915,67.387\n2.939,72.907\n", "25": "h_m,Q_m3s\n0.751,3.557\n0.907,6.123\n0.968,6.343\n1.210,13.015\n1.213,11.140\n1.240,13.182\n1.328,13.488\n1.361,15.210\n1.405,17.187\n1.579,20.923\n1.964,26.584\n2.236,37.072\n2.599,53.852\n2.672,50.494\n2.836,56.461\n"};
+const KIT = {"validate.py": "\"\"\"CE 465 project - submission self-check (format and running only; NOT correctness).\n\nUsage:  python validate.py --code <folder with run.py> --topic <1-4> --data <folder> [--schema schema_Tk.json]\nChecks that run.py finishes within 120 s and writes a results_T<k>.json that matches the schema.\n\"\"\"\nimport argparse, json, os, subprocess, sys, tempfile, math\n\ndef check(results, schema):\n    errs = []\n    if results.get(\"schema_version\") != schema[\"schema_version\"]:\n        errs.append(f\"schema_version should be {schema['schema_version']!r}\")\n    if results.get(\"topic\") != schema[\"topic\"]:\n        errs.append(f\"topic should be {schema['topic']}\")\n    fields = results.get(\"fields\", {})\n    for name, s in schema[\"fields\"].items():\n        if name not in fields:\n            errs.append(f\"missing field {name}\"); continue\n        v = fields[name]\n        if s[\"type\"] == \"number\":\n            if not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v):\n                errs.append(f\"{name} must be a finite number\")\n        elif s[\"type\"] == \"array\":\n            if (not isinstance(v, list) or len(v) != s[\"length\"]\n                    or not all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) for x in v)):\n                errs.append(f\"{name} must be a list of {s['length']} finite numbers\")\n        elif s[\"type\"] == \"string\":\n            if v not in s[\"values\"]:\n                errs.append(f\"{name} must be one of {s['values']}\")\n    return errs\n\ndef main():\n    ap = argparse.ArgumentParser()\n    ap.add_argument(\"--code\", required=True); ap.add_argument(\"--topic\", type=int, required=True)\n    ap.add_argument(\"--data\", required=True); ap.add_argument(\"--schema\")\n    a = ap.parse_args()\n    schema_path = a.schema or os.path.join(os.path.dirname(os.path.abspath(__file__)), f\"schema_T{a.topic}.json\")\n    schema = json.load(open(schema_path))\n    with tempfile.TemporaryDirectory() as out:\n        cmd = [sys.executable, \"run.py\", \"--topic\", str(a.topic), \"--data\", os.path.abspath(a.data), \"--out\", out]\n        try:\n            p = subprocess.run(cmd, cwd=a.code, capture_output=True, text=True, timeout=120)\n        except subprocess.TimeoutExpired:\n            print(\"FAIL: run.py took longer than 120 s\"); return 1\n        if p.returncode != 0:\n            print(\"FAIL: run.py stopped with an error:\\n\" + p.stderr[-2000:]); return 1\n        path = os.path.join(out, f\"results_T{a.topic}.json\")\n        if not os.path.exists(path):\n            print(f\"FAIL: run.py did not write results_T{a.topic}.json in the --out folder\"); return 1\n        try: results = json.load(open(path))\n        except Exception as e:\n            print(f\"FAIL: results_T{a.topic}.json is not valid JSON ({e})\"); return 1\n        errs = check(results, schema)\n        if errs:\n            print(\"FAIL:\\n  \" + \"\\n  \".join(errs)); return 1\n    print(\"OK: run.py ran and wrote a file in the right format. This does not check that the numbers are correct.\")\n    return 0\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n", "run_template.py": "\"\"\"CE 465 project - run.py template. Rename to run.py, keep the interface, fill in the work.\n\npython run.py --topic 1 --data <folder containing topic1.csv> --out <folder>\n\"\"\"\nimport argparse, json, os\n\ndef topic1(data_folder):\n    # read data_folder/topic1.csv (columns h_m, Q_m3s) and compute every field below\n    fields = {\n        \"a_naive\": None, \"b_naive\": None, \"Q5_naive\": None,          # part (a)\n        \"h0_scan\": None, \"SSE_scan\": None,                            # part (b)\n        \"lna_R1\": None, \"b_R1\": None, \"h0_R1\": None, \"h0_R2\": None,   # part (c)\n        \"Q_hold_naive\": [None, None, None], \"Q_hold_fit\": [None, None, None],\n        \"holdout_winner\": None,                                       # part (d): \"naive\" or \"fitted\"\n        \"Q5\": None, \"Q5_err\": None,                                  # part (e)\n    }\n    diagnostics = {}   # optional: iterations_R1, iterations_R2, R3_failed, step_norms_R1\n    return {\"schema_version\": \"T1-1.0\", \"topic\": 1, \"fields\": fields, \"diagnostics\": diagnostics}\n\nif __name__ == \"__main__\":\n    ap = argparse.ArgumentParser()\n    ap.add_argument(\"--topic\", type=int, required=True)\n    ap.add_argument(\"--data\", required=True)\n    ap.add_argument(\"--out\", required=True)\n    a = ap.parse_args()\n    result = {1: topic1}[a.topic](a.data)\n    os.makedirs(a.out, exist_ok=True)\n    with open(os.path.join(a.out, f\"results_T{a.topic}.json\"), \"w\") as f:\n        json.dump(result, f, indent=2)\n", "schema_T1.json": "{\n  \"schema_version\": \"T1-1.0\",\n  \"topic\": 1,\n  \"fields\": {\n    \"a_naive\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"-\",\n      \"part\": \"a\"\n    },\n    \"b_naive\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"-\",\n      \"part\": \"a\"\n    },\n    \"Q5_naive\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"m3/s\",\n      \"part\": \"a\"\n    },\n    \"h0_scan\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"m\",\n      \"part\": \"b\"\n    },\n    \"SSE_scan\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"-\",\n      \"part\": \"b\"\n    },\n    \"lna_R1\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"-\",\n      \"part\": \"c\"\n    },\n    \"b_R1\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"-\",\n      \"part\": \"c\"\n    },\n    \"h0_R1\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"m\",\n      \"part\": \"c\"\n    },\n    \"h0_R2\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"m\",\n      \"part\": \"c\"\n    },\n    \"Q_hold_naive\": {\n      \"type\": \"array\",\n      \"length\": 3,\n      \"units\": \"m3/s\",\n      \"part\": \"d\"\n    },\n    \"Q_hold_fit\": {\n      \"type\": \"array\",\n      \"length\": 3,\n      \"units\": \"m3/s\",\n      \"part\": \"d\"\n    },\n    \"holdout_winner\": {\n      \"type\": \"string\",\n      \"values\": [\n        \"naive\",\n        \"fitted\"\n      ],\n      \"part\": \"d\"\n    },\n    \"Q5\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"m3/s\",\n      \"part\": \"e_num\"\n    },\n    \"Q5_err\": {\n      \"type\": \"number\",\n      \"length\": null,\n      \"units\": \"m3/s\",\n      \"part\": \"e_num\"\n    }\n  },\n  \"diagnostics_optional\": [\n    \"iterations_R1\",\n    \"iterations_R2\",\n    \"R3_failed\",\n    \"step_norms_R1\",\n    \"holdout_rmse_naive\",\n    \"holdout_rmse_fit\"\n  ]\n}"};
+const TOPIC = 1, POOL = "A", PAGE_VERSION = "T1-page-1.2";
+
+function download(name, text, mime) {
+  const blob = new Blob([text], {type: mime || "text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function fillTeams(sel) {
+  sel.innerHTML = '<option value="">choose</option>' +
+    Array.from({length: 25}, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("");
+}
+const teamData = document.getElementById("team-data"), teamSub = document.getElementById("team-sub");
+fillTeams(teamData); fillTeams(teamSub);
+// keep the two team-number selectors identical, so data and submission always belong to the same team
+teamData.addEventListener("change", () => { teamSub.value = teamData.value; });
+teamSub.addEventListener("change", () => { teamData.value = teamSub.value; });
+document.getElementById("get-data").onclick = () => {
+  const t = teamData.value;
+  if (!t) { alert("Choose your team number first."); return; }
+  download("topic1.csv", DATA[t], "text/csv");
+};
+document.querySelectorAll("[data-kit]").forEach(b => b.onclick = () => download(b.dataset.kit, KIT[b.dataset.kit]));
+
+let files = [];
+const msg = document.getElementById("msg"), list = document.getElementById("filelist");
+function say(text, ok) { msg.textContent = text; msg.className = "msg " + (ok ? "ok" : "bad"); }
+function showFiles() { list.textContent = files.length ? "Attached: " + files.map(f => `${f.name} (${f.size} bytes)`).join(", ") : ""; }
+function readB64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(",")[1] || "");
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+document.getElementById("code").onchange = async (e) => {
+  files = [];
+  for (const f of e.target.files) files.push({name: f.name, size: f.size, b64: await readB64(f)});
+  showFiles(); say("", true);
+};
+function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+document.getElementById("export").onclick = () => {
+  const team = teamSub.value;
+  const choice = (document.querySelector('input[name="choice"]:checked') || {}).value;
+  const problems = [];
+  if (!team) problems.push("choose your team number");
+  if (!choice) problems.push("answer the part (e) choice");
+  if (files.length !== 1 || files[0].name !== "run.py") problems.push("attach exactly one file, named run.py");
+  const total = files.reduce((s, f) => s + f.size, 0);
+  if (total > 2e6) problems.push("keep run.py under 2 MB");
+  if (problems.length) { say("Not exported yet: " + problems.join("; ") + ".", false); return; }
+  const sub = {format: "CE465-submission-1", page_version: PAGE_VERSION, topic: TOPIC, pool: POOL,
+               team: Number(team), choice, exported_at: new Date().toISOString(), files};
+  const json = JSON.stringify(sub).replace(/</g, "\\u003c");
+  const names = files.map(f => `<li>${escapeHtml(f.name)} (${f.size} bytes)</li>`).join("");
+  const doc = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>CE 465 Topic ${TOPIC} - Team ${team}</title></head>
+<body style="font-family:sans-serif;max-width:40rem;margin:2rem auto;line-height:1.5">
+<h1>CE 465 Project - Topic ${TOPIC} submission</h1>
+<p>Team ${team} - Pool ${POOL} - part (e) choice ${choice} - exported ${sub.exported_at}</p>
+<p>Attached code:</p><ul>${names}</ul>
+<p>Upload this file to the Google Form, in the Pool ${POOL} field.</p>
+<script type="application/json" id="ce465-submission">${json}<\/script>
+</body></html>`;
+  download(`CE465_T${TOPIC}_Team${String(team).padStart(2, "0")}.html`, doc, "text/html");
+  say(`Exported CE465_T${TOPIC}_Team${String(team).padStart(2, "0")}.html. Upload it to the Google Form, in the Pool ${POOL} field.`, true);
+};
+document.getElementById("reload").onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const text = await f.text();
+  const m = text.match(/<script type="application\/json" id="ce465-submission">([\s\S]*?)<\/script>/);
+  if (!m) { say("That file is not an exported submission from this page.", false); return; }
+  try {
+    const sub = JSON.parse(m[1]);
+    if (sub.topic !== TOPIC) { say(`That file is for Topic ${sub.topic}, not Topic ${TOPIC}.`, false); return; }
+    teamSub.value = String(sub.team); teamData.value = String(sub.team);
+    const r = document.querySelector(`input[name="choice"][value="${sub.choice}"]`); if (r) r.checked = true;
+    files = sub.files || []; showFiles();
+    say("Loaded the exported file. Change anything you need, then export again.", true);
+  } catch (err) { say("That file could not be read.", false); }
+};
+</script>
+</body>
+</html>

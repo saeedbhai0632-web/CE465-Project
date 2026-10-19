@@ -1,0 +1,21 @@
+{
+  "schema_version": "T4-1.0",
+  "topic": 4,
+  "fields": {
+    "rmse_abrams_wc": 11.761387548365446,
+    "rmse_abrams_wb": 7.93209909936917,
+    "cond_linear_raw": 97027.73956104506,
+    "cond_linear_scaled": 8.939949374520406,
+    "top_corr_pair": "water+superplasticiser",
+    "lambda_cv": 10.0,
+    "rmse_quad_ols": 10.802503497109068,
+    "rmse_quad_ridge": 6.936719418134864,
+    "sd_water_ols": 1.3561561092439562,
+    "sd_water_ridge": 0.6465452678571582,
+    "f_new_wb": 42.489932387926714,
+    "f_new_ridge": 44.38470445509936,
+    "df_water_wb": -2.1916391709117065,
+    "df_water_ridge": -2.057592453316417
+  },
+  "diagnostics": {}
+}
